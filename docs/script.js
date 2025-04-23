@@ -22,12 +22,25 @@ async function withLoading(actionCallback) {
 }
 
 // Carrega as tarefas da API
-async function loadTasks() {
-  const res = await fetch(apiUrl);
-  const tasks = await res.json();
+async function loadTasks(retry = 0) {
+  try {
+    taskList.innerHTML = '';
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+    const tasks = await res.json();
+    tasks.forEach(addTaskToDOM);
+  } catch (err) {
+    console.warn(`Tentativa ${retry + 1}:`, err.message);
 
-  taskList.innerHTML = '';
-  tasks.forEach(addTaskToDOM);
+    if (retry < 3) {
+      // Espera e tenta novamente após 3 segundos
+      setTimeout(() => {
+        loadTasks(retry + 1);
+      }, 2000);
+    } else {
+      taskList.innerHTML = '<li>❌ Erro ao carregar tarefas. Tente atualizar.</li>';
+    }
+  }
 }
 
 // Insere uma tarefa no DOM
