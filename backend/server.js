@@ -10,7 +10,18 @@ const PORT = process.env.PORT || 5000;
 
 const FILE_PATH = path.join(__dirname, 'tasks.json');
 
-app.use(cors());
+app.use(cors({ origin: function (origin, callback) {
+  const allowedOrigins = [
+    'https://mtstavares.github.io',
+    'http://127.0.0.1:5500',
+    'http://localhost:5500'
+  ];
+  if (!origin || allowedOrigins.includes(origin)) {
+    callback(null, true);
+  } else {
+    callback(new Error('Not allowed by CORS'));
+  }
+}}));
 
 app.use(express.json());
 
