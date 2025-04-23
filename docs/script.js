@@ -3,31 +3,42 @@ const apiUrl = 'https://to-do-list-6766.onrender.com/api/tasks';
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const taskList = document.getElementById('task-list');
+const loadingDiv = document.getElementById('loading');
 
-// Buscar e exibir tarefas
+// Função principal para listar tarefas
 async function loadTasks() {
-  const res = await fetch(apiUrl);
-  const tasks = await res.json();
+  try {
+    // Mostra "carregando"
+    loadingDiv.style.display = 'block';
+    taskList.innerHTML = '';
 
-  taskList.innerHTML = '';
-  tasks.forEach(addTaskToDOM);
+    const res = await fetch(apiUrl);
+    const tasks = await res.json();
+
+    tasks.forEach(addTaskToDOM);
+  } catch (err) {
+    console.error("Erro ao carregar tarefas:", err);
+    loadingDiv.textContent = "⚠️ Erro ao carregar tarefas.";
+  } finally {
+    // Esconde o carregando
+    setTimeout(() => {
+      loadingDiv.style.display = 'none';
+    }, 300); // tempo pequeno para UX suave
+  }
 }
 
-// Adicionar tarefa no DOM
+// Cria e insere tarefas no DOM
 function addTaskToDOM(task) {
   const li = document.createElement('li');
   if (task.completed) li.classList.add('completed');
 
-  // Texto da tarefa
   const taskText = document.createElement('span');
   taskText.textContent = task.title;
   taskText.className = 'task-text';
 
-  // Div dos botões
   const buttonsDiv = document.createElement('div');
   buttonsDiv.className = 'task-buttons';
 
-  // Botão de concluir/desmarcar
   const toggleBtn = document.createElement('button');
   toggleBtn.innerHTML = task.completed
     ? '<i class="fas fa-rotate-left"></i>'
@@ -35,10 +46,9 @@ function addTaskToDOM(task) {
   toggleBtn.title = task.completed ? 'Desmarcar' : 'Concluir';
   toggleBtn.onclick = async () => {
     await fetch(`${apiUrl}/${task.id}`, { method: 'PUT' });
-    await loadTasks();
+    await loadTasks(); // garante recarregamento APÓS resposta
   };
 
-  // Botão de excluir
   const delBtn = document.createElement('button');
   delBtn.innerHTML = '<i class="fas fa-trash"></i>';
   delBtn.title = 'Excluir';
@@ -66,8 +76,8 @@ taskForm.addEventListener('submit', async (e) => {
   });
 
   taskInput.value = '';
-  await loadTasks();
+  await loadTasks(); // garante atualização APÓS criação
 });
 
-// Inicializar
+// Início
 loadTasks();
