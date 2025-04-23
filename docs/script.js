@@ -1,4 +1,4 @@
-const apiUrl = 'https://to-do-list-6766.onrender.com/api/tasks';
+const apiUrl = 'http://localhost:5000/api/tasks';
 
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
