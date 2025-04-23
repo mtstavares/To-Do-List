@@ -36,7 +36,7 @@ async function loadTasks(retry = 0) {
       // Espera e tenta novamente após 3 segundos
       setTimeout(() => {
         loadTasks(retry + 1);
-      }, 2000);
+      }, 1000);
     } else {
       taskList.innerHTML = '<li>❌ Erro ao carregar tarefas. Tente atualizar.</li>';
     }
