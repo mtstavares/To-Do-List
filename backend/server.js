@@ -10,7 +10,10 @@ const PORT = process.env.PORT || 5000;
 
 const FILE_PATH = path.join(__dirname, 'tasks.json');
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://mtstavares.github.io'
+}));
+
 app.use(express.json());
 
 // Função para ler tarefas do arquivo
