@@ -11,7 +11,9 @@ const PORT = process.env.PORT || 5000;
 const FILE_PATH = path.join(__dirname, 'tasks.json');
 
 app.use(cors({
-  origin: 'https://mtstavares.github.io'
+  origin: 'https://mtstavares.github.io',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type']
 }));
 
 app.use(express.json());
@@ -85,5 +87,6 @@ app.delete('/api/tasks/:id', (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+
 });
