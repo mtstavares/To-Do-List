@@ -5,29 +5,32 @@ const taskInput = document.getElementById('task-input');
 const taskList = document.getElementById('task-list');
 const loadingDiv = document.getElementById('loading');
 
-// Função principal para listar tarefas
-async function loadTasks() {
+// Função genérica para ações com carregamento
+async function withLoading(actionCallback) {
   try {
-    // Mostra "carregando"
-    loadingDiv.style.display = 'block';
-    taskList.innerHTML = '';
-
-    const res = await fetch(apiUrl);
-    const tasks = await res.json();
-
-    tasks.forEach(addTaskToDOM);
+    loadingDiv.style.display = 'flex';
+    await actionCallback(); // executa a ação
+    await loadTasks(); // atualiza tarefas depois
   } catch (err) {
-    console.error("Erro ao carregar tarefas:", err);
-    loadingDiv.textContent = "⚠️ Erro ao carregar tarefas.";
+    console.error('Erro na ação:', err);
+    loadingDiv.innerHTML = '<span>⚠️ Erro na operação.</span>';
   } finally {
-    // Esconde o carregando
     setTimeout(() => {
       loadingDiv.style.display = 'none';
-    }, 300); // tempo pequeno para UX suave
+    }, 300);
   }
 }
 
-// Cria e insere tarefas no DOM
+// Carrega as tarefas da API
+async function loadTasks() {
+  const res = await fetch(apiUrl);
+  const tasks = await res.json();
+
+  taskList.innerHTML = '';
+  tasks.forEach(addTaskToDOM);
+}
+
+// Insere uma tarefa no DOM
 function addTaskToDOM(task) {
   const li = document.createElement('li');
   if (task.completed) li.classList.add('completed');
@@ -39,23 +42,26 @@ function addTaskToDOM(task) {
   const buttonsDiv = document.createElement('div');
   buttonsDiv.className = 'task-buttons';
 
+  // Botão de concluir/desmarcar
   const toggleBtn = document.createElement('button');
   toggleBtn.innerHTML = task.completed
     ? '<i class="fas fa-rotate-left"></i>'
     : '<i class="fas fa-check"></i>';
   toggleBtn.title = task.completed ? 'Desmarcar' : 'Concluir';
-  toggleBtn.onclick = async () => {
-    await fetch(`${apiUrl}/${task.id}`, { method: 'PUT' });
-    await loadTasks(); // garante recarregamento APÓS resposta
-  };
+  toggleBtn.onclick = () =>
+    withLoading(() =>
+      fetch(`${apiUrl}/${task.id}`, { method: 'PUT' })
+    );
 
+  // Botão de excluir
   const delBtn = document.createElement('button');
   delBtn.innerHTML = '<i class="fas fa-trash"></i>';
   delBtn.title = 'Excluir';
-  delBtn.onclick = async (e) => {
+  delBtn.onclick = (e) => {
     e.stopPropagation();
-    await fetch(`${apiUrl}/${task.id}`, { method: 'DELETE' });
-    await loadTasks();
+    withLoading(() =>
+      fetch(`${apiUrl}/${task.id}`, { method: 'DELETE' })
+    );
   };
 
   buttonsDiv.append(toggleBtn, delBtn);
@@ -64,20 +70,20 @@ function addTaskToDOM(task) {
 }
 
 // Submeter nova tarefa
-taskForm.addEventListener('submit', async (e) => {
+taskForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const title = taskInput.value.trim();
   if (!title) return;
 
-  await fetch(apiUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title })
+  withLoading(async () => {
+    await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title })
+    });
+    taskInput.value = '';
   });
-
-  taskInput.value = '';
-  await loadTasks(); // garante atualização APÓS criação
 });
 
-// Início
+// Carregar ao iniciar
 loadTasks();

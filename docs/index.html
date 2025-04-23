@@ -20,8 +20,11 @@
       <button type="submit">Adicionar</button>
     </form>
 
-    <div id="loading" style="display: none;">🔄 Carregando tarefas...</div>
-
+    <div id="loading" class="loading-overlay" style="display: none;">
+      <div class="spinner"></div>
+      <span>Carregando...</span>
+    </div>
+    
     <ul id="task-list"></ul>
   </div>
 
